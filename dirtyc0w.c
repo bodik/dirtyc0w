@@ -23,9 +23,10 @@ m00000000000000000
 #include <string.h>
  
 void *map;
-int f;
-struct stat st;
+int f, f1;
+struct stat st, st1;
 char *name;
+char data[65535];
  
 void *madviseThread(void *arg)
 {
@@ -62,7 +63,7 @@ You have to write to /proc/self/mem :: https://bugzilla.redhat.com/show_bug.cgi?
 You have to reset the file pointer to the memory position.
 */
     lseek(f,map,SEEK_SET);
-    c+=write(f,str,strlen(str));
+    c+=write(f,str,st1.st_size);
   }
   printf("procselfmem %d\n\n", c);
 }
@@ -81,6 +82,12 @@ You have to open the file in read only mode.
   f=open(argv[1],O_RDONLY);
   fstat(f,&st);
   name=argv[1];
+
+  f=open(argv[2],O_RDONLY);
+  fstat(f1,&st1);
+  read(f1, data, st1.st_size);
+  close(f1);
+
 /*
 You have to use MAP_PRIVATE for copy-on-write mapping.
 > Create a private copy-on-write mapping.  Updates to the
@@ -98,7 +105,7 @@ You have to open with PROT_READ.
 You have to do it on two threads.
 */
   pthread_create(&pth1,NULL,madviseThread,argv[1]);
-  pthread_create(&pth2,NULL,procselfmemThread,argv[2]);
+  pthread_create(&pth2,NULL,procselfmemThread,data);
 /*
 You have to wait for the threads to finish.
 */
